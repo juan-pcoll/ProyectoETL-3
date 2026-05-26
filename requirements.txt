@@ -1,0 +1,6 @@
+great-expectations
+kafka-python
+apache-airflow
+pandas
+sqlalchemy
+psycopg2-binary
