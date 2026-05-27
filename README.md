@@ -331,7 +331,7 @@ Estas reglas funcionan como un mecanismo de control similar a pruebas unitarias,
 
 ---
 
-## ⭐ Modelo Estrella (Star Schema)
+## Modelo Estrella (Star Schema)
 
 El Data Warehouse se organiza en:
 
