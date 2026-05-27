@@ -1,17 +1,26 @@
+import pandas as pd
+
+
 def validate_data(tables):
 
-    print("\n=== VALIDATION ===")
+    print("\n=== DATA VALIDATION ===")
 
     for name, df in tables.items():
 
+        print(f"\nValidating table: {name}")
+
+        # Validar dataframe vacío
         if df.empty:
-            raise ValueError(f"La tabla {name} está vacía")
+            raise ValueError(f"{name} está vacía")
 
-        nulls = df.isnull().sum().sum()
+        # Validar nulls
+        null_columns = df.columns[df.isnull().any()].tolist()
 
-        if nulls > 0:
-            print(f"[WARN] {name} contiene {nulls} valores nulos")
+        if null_columns:
+            raise ValueError(
+                f"{name} tiene valores nulos en columnas: {null_columns}"
+            )
 
-    print("=== VALIDATION FINISHED ===\n")
+        print(f"[OK] {name} validada correctamente")
 
-    return tables
+    print("\n=== VALIDATION FINISHED ===")
