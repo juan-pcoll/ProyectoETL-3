@@ -1,292 +1,188 @@
-# ETL Pipeline – Análisis de Condiciones de Vida y Pobreza
+# ETL Pipeline – Índice de Pobreza Multidimensional en Colombia
+
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-316192)
+![Apache Airflow](https://img.shields.io/badge/Airflow-Orchestration-red)
+![Power BI](https://img.shields.io/badge/PowerBI-Visualization-yellow)
+![Great Expectations](https://img.shields.io/badge/GreatExpectations-DataQuality-success)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+
+Proyecto ETL orientado al análisis de condiciones de vida y pobreza multidimensional en Colombia utilizando datos oficiales del DANE y procesamiento analítico mediante un Data Warehouse en PostgreSQL.
+
+---
+
+# Tabla de Contenido
+
+- Descripción del Proyecto
+- Objetivos
+- Fuente de Datos
+- Arquitectura del Proyecto
+- Pipeline ETL
+- Modelo Estrella
+- Diccionario de Datos
+- Estructura del Proyecto
+- Base de Datos
+- Ejecución del Proyecto
+- Ejecución con Airflow
+- Consultas SQL
+- Tecnologías Utilizadas
+- Autores
+
+---
 
 # Descripción del Proyecto
-Dentro de este repositorio se encontrará todo el proyecto a desarrollar dentro de la clase de ETL con una **evaluación del Índice de Pobreza Multidimensional en Colombia – 2023** 
-Autores: Juan Pablo Coll Muriel Miguel Ángel Echeverry Fernández Samuel Peña García
 
-Objetivo del Proyecto Este proyecto tiene como finalidad realizar una evaluación estadística y estructurada del Índice de Pobreza Multidimensional (IPM) en Colombia para el año 2023, utilizando datos oficiales del DANE.
+Este proyecto implementa un pipeline ETL (Extract, Transform, Load) para procesar información relacionada con condiciones socioeconómicas de la población colombiana.
 
-Más allá del cumplimiento académico, esta iniciativa busca: **Transformar datos crudos en información estructurada y analítica**. Visualizar indicadores clave que permitan comprender la realidad social del país. Aportar al análisis relacionado con los Objetivos de Desarrollo Sostenible (ODS), especialmente el ODS 1: Fin de la pobreza. Facilitar que terceros puedan reutilizar esta información como base para investigaciones, análisis de políticas públicas o generación de conciencia social basada en datos.
+Los datos son limpiados, transformados y almacenados en un Data Warehouse utilizando un modelo estrella (Star Schema), permitiendo realizar análisis sobre:
 
-Este proyecto demuestra cómo la ingeniería de datos puede convertirse en una herramienta poderosa para la comprensión de problemáticas estructurales. Fuente de Datos
+- Nivel educativo
+- Acceso a salud
+- Acceso a tecnología
+- Condición laboral
+- Variables demográficas
+- Indicadores de pobreza
 
-Los datos utilizados fueron obtenidos del **Departamento Administrativo Nacional de Estadística (DANE)**. 
-Catálogo del estudio: https://microdatos.dane.gov.co/index.php/catalog/824/study-description Descarga de microdatos: https://microdatos.dane.gov.co/index.php/catalog/824/get-microdata Diccionario de variables: https://microdatos.dane.gov.co/index.php/catalog/824/data-dictionary/F45?file_name=Personas%20%20(departamental)
+---
 
-Características del Dataset Año: 2023 y 2024 Nivel: Personas (departamental) Formato original: .csv Datos públicos y de libre uso Variables codificadas (cada pregunta representada por un código) Respuestas numéricas asociadas a categorías específicas Preguntas mayoritariamente cerradas y de opción múltiple
+# Objetivos del Proyecto
 
-Se utilizó la **API del World Bank para complementar el dataset con indicadores macroeconómicos**:
+Este proyecto busca:
 
-Variables integradas:
-poverty_rate
-unemployment_rate
-gdp_per_capita
-gini_index
-Estas variables se integran mediante la columna:
+- Transformar datos crudos en información estructurada y analítica
+- Facilitar el análisis del Índice de Pobreza Multidimensional (IPM)
+- Integrar indicadores macroeconómicos externos
+- Aplicar procesos de calidad de datos
+- Implementar arquitectura ETL automatizada
+- Facilitar visualización y análisis en Power BI
 
-Este proyecto implementa un **pipeline ETL (Extract, Transform, Load)** para procesar datos relacionados con condiciones socioeconómicas de la población.
+---
 
-Los datos se limpian, transforman y almacenan en un **Data Warehouse en PostgreSQL** usando un **modelo estrella (Star Schema)** para facilitar el análisis.
+# Fuente de Datos
 
-El objetivo es permitir el análisis de indicadores como:
+Los datos utilizados provienen del Departamento Administrativo Nacional de Estadística (DANE).
 
-* Nivel educativo
-* Acceso a salud
-* Acceso a tecnología
-* Condición laboral
-* Distribución demográfica
+| Recurso | Enlace |
+|---|---|
+| Catálogo del estudio | https://microdatos.dane.gov.co/index.php/catalog/824/study-description |
+| Descarga de microdatos | https://microdatos.dane.gov.co/index.php/catalog/824/get-microdata |
+| Diccionario de variables | https://microdatos.dane.gov.co/index.php/catalog/824/data-dictionary/F45?file_name=Personas%20%20(departamental) |
 
-# Diccionario de datos
-Aquí se presenta el diccionario de datos, en el cual se puede consultar el significado de algunas secuencias numéricas presentes en la base de datos. Estas secuencias corresponden a códigos utilizados en el dataset que, por sí solos, no permiten identificar su significado. Por lo tanto, el diccionario de datos resulta fundamental para interpretar correctamente cada variable y comprender el valor que representan dichos códigos.
+---
 
-**secuencia_encuesta**
+# Características del Dataset
 
-**secuencia_p**
+| Característica | Valor |
+|---|---|
+| Año | 2023 - 2024 |
+| Nivel | Personas (departamental) |
+| Formato | CSV |
+| Tipo de datos | Públicos |
+| Variables | Codificadas |
+| Tipo de preguntas | Cerradas y opción múltiple |
 
-**orden**
+---
 
-**P6051**(¿Cuál es el parentesco de ... con el jefe o la jefa de este hogar?)
-1 Jefe (a) del hogar
-2 Pareja, esposo(a), cónyuge, compañero(a)
-3 Hijo(a), hijastro(a)
-4 Nieto(a)
-5 Padre, madre, padrastro, madrastra
-6 Suegro o suegra
-7 Hermano(a), hemanastro(a)
-8 Yerno, nuera
-9 Otro(a) pariente del(de la) jefe(a)
-10 Empleado(a) del servicio doméstico
-11 Parientes del servicio doméstico
-12 Trabajador
-13 Pensionista
-14 Otro(a) no pariente
+# Integración de API Externa
 
-**P6020**(Sexo)
-1 Hombre
-2 Mujer
+Se utilizó la API del World Bank para complementar el dataset con indicadores macroeconómicos.
 
-**P6040**(¿Cuántos años cumplidos tiene?)
+## Variables Integradas
 
-**Factor de Expansión (FEX_C)**
-
-**P6090**(¿Está afiliado, es cotizante o es beneficiario de alguna entidad de seguridad social en salud? (entidad promotora de salud -eps o administradora de régimen subsidiado -ars (a través del sisben)))
-1 Sí
-2 No
-3 No sabe, no informa
-
-**P5665**(En los últimos 30 días, ¿tuvo alguna enfermedad, accidente , problema odontológico o algún otro problema de salud que no haya implicado hospitalización)
-1 Sí
-2 No
-
-**P8563**(Para tratar ese problema de salud, ¿qué hizo principalmente _____?)
-1 Acudió a Institución prestadora de servicios de salud
-2 Acudió a un médico general, especialista, odontólogo, terapeuta o profesional de la salud independiente ( de forma particular)
-3 Acudió a un boticario, farmaceuta, droguista
-4 Consultó a un tegua, empírico, curandero, yerbatero, comadrona
-5 Asistió a terapias alternativas (acupuntura, esencias florales, musicoterapias, homeópata etc.)
-6 Usó remedios caseros
-7 Se autorecetó
-8 Nada
-
-**P51**(¿Dónde o con quién permanece… durante la mayor parte del tiempo entre semana?)
-1 Asiste a un hogar comunitario, guardería , jardín o centro de desarrollo infantil.
-2 Con su padre o madre en la casa
-3 Con su padre o madre en el trabajo
-4 Con empleada o niñera en la casa
-5 Al cuidado de un pariente de 18 años o más
-6 Al cuidado de un pariente menor de 18 años
-7 En casa solo
-8 Otro, ¿Cuál?
-
-**P55**(¿Recibe o toma <...> desayuno o almuerzo en el lugar donde permanece la mayor parte del tiempo entre semana?)
-1 Si
-2 No
-
-**P774**(¿paga por esta alimentación?)
-1 Si, completamente
-2 Si, por un pago simbólico
-3 No paga, lo recibe en otro hogar o en la institución a la que asiste
-4 No paga, lo recibe o lo lleva del hogar
-
-**P6160**(¿sabe leer y escribir?)
-1 Si
-2 No
-
-**P8586**(¿actualmente estudia? (asiste al preescolar, escuela, colegio o universidad))
-1 Si
-2 No
-
-**P8587**(¿Cuál es el nivel educativo más alto alcanzado por ... y el último año o grado aprobado en este nivel?)
-1 Ninguno
-2 Preescolar
-3 Básica Primaria (1º - 5º)
-4 Básica secundaria (6º--9º)
-5 Media (10º--13º)
-6 Técnico sin título
-7 Técnico con título
-8 Tecnológico sin título
-9 Tecnológico con título
-10 Universitario sin titulo
-11 Universitario con titulo
-12 Postgrado sin titulo
-13 Postgrado con titulo
-
-**P8587S1**(Grado o año aprobado)
-
-**P1088**(En qué nivel está matriculado y qué grado cursa?)
-1 Preescolar (1 a 3)
-2 Básica Primaria (1 a 5)
-3 Básica secundaria (6 a 9)
-4 Media (10 a 13)
-5 Técnico
-6 Tecnológico
-7 Universitario
-8 Postgrado
-
-**P1088S1**(Grado o año que cursa)
-
-**P6180**(¿recibe en el plantel educativo alimentos (desayunos, medias nueves, almuerzos, etc.) en forma gratuita o por un pago simbólico?)
-1 Si
-2 No
-
-**P6240**(¿En que actividad ocupó...... la mayor parte del tiempo LA SEMANA PASADA?)
-1 Trabajando
-2 Buscando trabajo
-3 Estudiando
-4 Oficios del hogar
-5 Incapacitado permanentemente para trabajar
-6 Otra actividad ¿cuál?
-
-**P6250**(Además de lo anterior, ¿.....realizó LA SEMANA PASADA alguna actividad paga por una hora o más?)
-1 Si
-2 No
-
-**P6260**(Aunque no trabajó LA SEMANA PASADA, por una HORA O MÁS en forma remunerada, ¿tenía durante esa semana algún trabajo o negocio por el que recibe ingresos?)
-1 Si
-2 No
-
-**P6270**(¿trabajó LA SEMANA PASADA en un negocio por UNA HORA O MÁS sin que le pagaran?)
-1 Si
-2 No
-
-**P6351**(Si le hubiera resultado algún trabajo a …. ¿estaba disponible LA SEMANA PASADA para empezar a trabajar?)
-1 Si
-2 No
-
-**P6390**(¿A qué actividad se dedica principalmente la empresa o negocio en la que ... realiza su trabajo?)
-
-**P7250**(¿Durante cuántas semanas ha estado o estuvo <...> buscando trabajo?)
-
-**P6920**(¿Está cotizando actualmente a un fondo de pensiones?)
-1 Si
-2 No
-3 Ya es pesnionado
-
-**P3336S1**(¿En qué modalidad(es) o a través de qué medio(s) se encuentra estudiando ... actualmente?)
-
-**P3336S2**(¿En qué modalidad(es) o a través de qué medio(s) se encuentra estudiando ... actualmente? 2. Virtual (a través de internet en computador de escritorio, portátil, tableta o celular))
-
-**P3336S3**(¿En qué modalidad(es) o a través de qué medio(s) se encuentra estudiando ... actualmente? 3. Alternancia entre presencial y virtual)
-
-**P3337**(¿tuvo comunicación con sus maestros la semana pasada?)
-
-**P1082S2**(¿Tiene Teléfono celular inteligente (smartphone)?)
+| Variable | Descripción |
+|---|---|
+| poverty_rate | Tasa de pobreza |
+| unemployment_rate | Tasa de desempleo |
+| gdp_per_capita | PIB per cápita |
+| gini_index | Índice de Gini |
 
 ---
 
 # Arquitectura del Proyecto
-Raw Data (CSV 2023 + 2024)
-        ↓
-Extract (Python)
-        ↓
-Clean (Validación estructural)
-        ↓
-Transform (Modelo estrella)
-        ↓
+
+```text
+Raw CSV Data
+      ↓
+Extract
+      ↓
+Clean
+      ↓
+Transform
+      ↓
 Merge API Indicators
-        ↓
-Quality Check (Great Expectations)
-        ↓
-Load (PostgreSQL + CSV)
-        ↓
-Visualization (Power BI)
-
----
-
-# Estructura del Proyecto
-
-```
-project_1/
-│
-├── airflow/
-│   └── dags/
-│       └── etl-dag.py
-|
-├── data/
-│   ├── raw/
-│   │   └── personas(departamental)2023-CEP.csv
-│   │
-│   └── processed/
-│       ├── dim_demografia.csv
-│       ├── dim_educacion.csv
-│       ├── dim_tecnologia.csv
-│       ├── dim_salud.csv
-│       ├── dim_trabajo.csv
-│       └── fact_persona.csv
-│
-├── src/
-│   ├── extract.py
-│   ├── transform.py
-│   ├── load.py
-│   └── main.py
-│   └── validate.py
-|   └── clean.py
-|   └── dictionaries.py
-|   └── extract_api.py
-|   └── fusion.py
-└── README.md
+      ↓
+Quality Validation
+      ↓
+Load PostgreSQL
+      ↓
+Power BI Visualization
 ```
 
 ---
 
 # Pipeline ETL
 
-**Orquestación del Pipeline con Apache Airflow**
+El pipeline ETL fue automatizado utilizando Apache Airflow, permitiendo ejecutar cada etapa de forma ordenada y reproducible.
 
-El pipeline ETL fue automatizado utilizando Apache Airflow, lo que permitió estructurar y ejecutar cada etapa del proceso de manera ordenada, reproducible y escalable.
+## Flujo del Pipeline
 
-Airflow se encarga de coordinar la ejecución de las tareas definidas dentro del flujo ETL mediante un DAG (Directed Acyclic Graph).
-
-El flujo del pipeline implementado es:
-
+```text
 Extract → Clean → Transform → Validate → Load
-
-Cada etapa corresponde a una tarea independiente dentro del DAG.
-
-## Extract
-
-Carga los datos desde el archivo CSV.
-```python
-df = extract_data()
 ```
-Los datos originales provienen de encuestas socioeconómicas:
-personas(departamental) 2023
-personas(departamental) 2024
 
 ---
 
-# fusion
+# Etapas del Pipeline
 
-Durante esta etapa del pipeline ETL se realizó la integración de múltiples fuentes de datos con el objetivo de construir una estructura analítica unificada y consistente.
+## Extract
 
-Esta fase permitió combinar información proveniente de:
+Carga de datos desde archivos CSV.
 
-dataset de personas 2023
-dataset de personas 2024
-indicadores macroeconómicos externos obtenidos mediante API
-dimensiones generadas en el modelo estrella
+```python
+df = extract_data()
+```
 
-La fusión de datos se realizó utilizando claves comunes como:
+Datasets utilizados:
+
+- personas(departamental)2023
+- personas(departamental)2024
+
+---
+
+## Clean
+
+Procesos de limpieza aplicados:
+
+- Normalización de columnas
+- Eliminación de inconsistencias
+- Conversión de tipos de datos
+- Tratamiento de valores faltantes
+
+---
+
+## Transform
+
+Transformación de datos y construcción del modelo dimensional.
+
+Procesos aplicados:
+
+- Creación de dimensiones
+- Construcción de tabla de hechos
+- Variables derivadas
+- Integración de indicadores externos
+
+---
+
+## Fusion
+
+Integración de múltiples fuentes de información:
+
+- Dataset 2023
+- Dataset 2024
+- API World Bank
+- Dimensiones analíticas
+
+Claves utilizadas:
 
 - year
 - sexo
@@ -294,177 +190,268 @@ La fusión de datos se realizó utilizando claves comunes como:
 - nivel educativo
 - condición laboral
 
-permitiendo consolidar la información en una sola estructura analítica.
-
-# Transform
-
-Se realizan varios procesos de limpieza:
-
-* Normalización de nombres de columnas
-* Eliminación de inconsistencias
-* Conversión de tipos de datos
-* Creación de variables derivadas
-Además se construye un **modelo dimensional**.
-
 ---
 
-**Validación de Calidad de Datos con Great Expectations**
+## Validate
 
-Para garantizar la integridad y confiabilidad de la información procesada, se implementó una etapa de validación automática de calidad de datos utilizando la librería Great Expectations.
+Se implementó validación automática de calidad utilizando Great Expectations.
 
-Esta fase permite verificar que los datos cumplan reglas definidas antes de ser cargados en el Data Warehouse.
+### Validaciones Aplicadas
 
-Las validaciones aplicadas incluyen:
+| Validación | Descripción |
+|---|---|
+| Claves únicas | Validación de IDs únicos |
+| Valores nulos | Control de campos obligatorios |
+| Rangos válidos | Verificación de variables numéricas |
+| Integridad dimensional | Consistencia entre dimensiones y hechos |
 
-Verificación de claves primarias únicas en la tabla fact_persona
-Validación de valores no nulos en claves sustitutas (*_sk)
-Control del número mínimo esperado de registros
-Validación de consistencia entre dimensiones y tabla de hechos
-Verificación de rangos válidos en variables numéricas
+### Ejemplo
 
-Ejemplo de validación aplicada:
-
+```python
 validator.expect_column_values_to_not_be_null("persona_fact_id")
 validator.expect_column_values_to_be_unique("persona_fact_id")
-
-Estas reglas funcionan como un mecanismo de control similar a pruebas unitarias, pero aplicadas a los datos del pipeline ETL.
+```
 
 ---
 
-## ⭐ Modelo Estrella (Star Schema)
+# Modelo Estrella (Star Schema)
 
-El Data Warehouse se organiza en:
+## Fact Table
 
-### Fact Table
-```
+```text
 fact_persona
 ```
-Contiene métricas y llaves a dimensiones.
+
+Contiene métricas y claves relacionadas con las dimensiones.
 
 ---
 
-### Dimensiones
+## Dimensiones
 
-```
+```text
 dim_demografia
 dim_educacion
 dim_tecnologia
 dim_salud
 dim_trabajo
 ```
-Cada dimensión describe un aspecto de la persona.
+
+Cada dimensión representa un aspecto específico de la persona.
+
+---
+
+# Diccionario de Datos
+
+## Demografía
+
+| Variable | Descripción | Valores |
+|---|---|---|
+| P6020 | Sexo | 1 = Hombre, 2 = Mujer |
+| P6040 | Edad | Valor numérico |
+| P6051 | Parentesco con jefe del hogar | 1-14 categorías |
+| FEX_C | Factor de expansión | Valor numérico |
+
+---
+
+## Salud
+
+| Variable | Descripción | Valores |
+|---|---|---|
+| P6090 | Afiliación a salud | 1 = Sí, 2 = No |
+| P5665 | Enfermedad últimos 30 días | 1 = Sí, 2 = No |
+| P8563 | Acción frente problema de salud | 1-8 categorías |
+
+---
+
+## Educación
+
+| Variable | Descripción | Valores |
+|---|---|---|
+| P6160 | Sabe leer y escribir | 1 = Sí, 2 = No |
+| P8586 | Actualmente estudia | 1 = Sí, 2 = No |
+| P8587 | Nivel educativo alcanzado | 1-13 categorías |
+| P1088 | Nivel matriculado | 1-8 categorías |
+| P6180 | Alimentación escolar | 1 = Sí, 2 = No |
+
+---
+
+## Trabajo
+
+| Variable | Descripción | Valores |
+|---|---|---|
+| P6240 | Actividad principal | 1-6 categorías |
+| P6250 | Actividad paga | 1 = Sí, 2 = No |
+| P6260 | Trabajo o negocio | 1 = Sí, 2 = No |
+| P6270 | Trabajo sin pago | 1 = Sí, 2 = No |
+| P6351 | Disponibilidad laboral | 1 = Sí, 2 = No |
+| P7250 | Semanas buscando trabajo | Valor numérico |
+| P6920 | Cotización pensión | 1 = Sí, 2 = No |
+
+---
+
+## Tecnología
+
+| Variable | Descripción | Valores |
+|---|---|---|
+| P1082S2 | Smartphone | 1 = Sí, 2 = No |
+| P3337 | Comunicación con maestros | 1 = Sí, 2 = No |
+
+---
+
+# Estructura del Proyecto
+
+```text
+project_1/
+│
+├── airflow/
+│   └── dags/
+│       └── etl-dag.py
+│
+├── data/
+│   ├── raw/
+│   └── processed/
+│
+├── src/
+│   ├── extract.py
+│   ├── clean.py
+│   ├── transform.py
+│   ├── fusion.py
+│   ├── validate.py
+│   ├── load.py
+│   ├── extract_api.py
+│   ├── dictionaries.py
+│   └── main.py
+│
+└── README.md
+```
 
 ---
 
 # Base de Datos
 
-Se usa **PostgreSQL** como Data Warehouse y tambien se hace crea un warehouse dentro de la misma carpeta por si dado caso no es utilizada la aplicacion.
+Se utiliza PostgreSQL como Data Warehouse principal.
 
-Configuración de conexión:
+## Configuración
 
-```
+```python
 postgresql+psycopg2://postgres:password@localhost:5432/ods_pobreza
 ```
 
-Las tablas se cargan automáticamente desde Python.
+Las tablas son cargadas automáticamente desde Python.
 
 ---
 
-# Cómo ejecutar el proyecto
+# Cómo Ejecutar el Proyecto
 
----
+## Clonar Repositorio
 
-# Clonar el repositorio
-
-```
+```bash
 git clone <repo>
 cd project_1
 ```
 
 ---
 
-# Instalar dependencias
+## Instalar Dependencias
 
-```
+```bash
 pip install pandas sqlalchemy psycopg2-binary
 ```
 
 ---
 
-# Crear base de datos en PostgreSQL
+## Crear Base de Datos
 
-Este paso solo es si se va a utilizar postgreSQL si en dado caso no va hacer uso de este saltar este paso
-```
+```sql
 CREATE DATABASE ods_pobreza;
 ```
 
 ---
 
-# Ejecutar el pipeline
+## Ejecutar Pipeline
 
-```
+```bash
 python src/main.py
 ```
 
-Esto ejecutará:
-
-```
-Extract → Transform → Load
-```
-
 ---
-# ejecutar con airflow
 
-Antes de ejecutar el pipeline, es necesario tener instalado:
+# Ejecución con Apache Airflow
+
+## Requisitos
 
 - Docker
 - Docker Compose
 
 Verificar instalación:
 
+```bash
 docker --version
 docker compose version
-Iniciar Airflow con Docker
+```
+
+---
+
+## Iniciar Airflow
 
 Desde la carpeta:
 
+```bash
 airflow/
+```
 
-ejecutar:
+Ejecutar:
 
-**docker compose up -d**
+```bash
+docker compose up -d
+```
 
-Esto inicia automáticamente los servicios:
+---
 
-Airflow Scheduler
-Airflow Webserver
-Airflow Worker
-PostgreSQL
-Redis
+## Servicios Iniciados
 
-**Abrir en el navegador:**
+- Airflow Scheduler
+- Airflow Webserver
+- Airflow Worker
+- PostgreSQL
+- Redis
 
-**http://localhost:8085**
+---
 
-Credenciales por defecto:
+## Acceso Web
 
-usuario: airflow
-contraseña: airflow
+```text
+http://localhost:8085
+```
 
-# Si se realizan cambios en el código del pipeline:
+### Credenciales
 
-**docker compose restart**
+| Usuario | Contraseña |
+|---|---|
+| airflow | airflow |
 
-Si se modifican dependencias o configuración:
+---
 
-**docker compose down**
-**docker compose up -d**
+## Reiniciar Servicios
 
--- 
+```bash
+docker compose restart
+```
 
-# Ejemplos de consultas SQL
+---
 
-### Distribución por sexo
+## Reiniciar Contenedores
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+---
+
+# Ejemplos de Consultas SQL
+
+## Distribución por Sexo
 
 ```sql
 SELECT 
@@ -478,7 +465,7 @@ GROUP BY d.sexo;
 
 ---
 
-### Acceso a smartphone
+## Acceso a Smartphone
 
 ```sql
 SELECT 
@@ -492,7 +479,7 @@ GROUP BY t.celular_inteligente;
 
 ---
 
-### Nivel educativo
+## Nivel Educativo
 
 ```sql
 SELECT 
@@ -506,16 +493,32 @@ GROUP BY e.nivel_educativo_alcanzado;
 
 ---
 
-# Tecnologías utilizadas
+# Tecnologías Utilizadas
 
-* Python
-* Pandas
-* PostgreSQL
-* SQLAlchemy
-* psycopg2
-* Power BI (opcional)
+| Tecnología | Uso |
+|---|---|
+| Python | Desarrollo ETL |
+| Pandas | Transformación de datos |
+| PostgreSQL | Data Warehouse |
+| SQLAlchemy | Conexión ORM |
+| psycopg2 | Conector PostgreSQL |
+| Apache Airflow | Orquestación |
+| Great Expectations | Calidad de datos |
+| Power BI | Visualización |
+| Docker | Contenedores |
 
 ---
-#   P r o y e c t 2 - E T L - C E P 
- 
- 
+
+# Autores
+
+| Nombre |
+|---|
+| Juan Pablo Coll Muriel |
+| Miguel Ángel Echeverry Fernández |
+| Samuel Peña García |
+
+---
+
+# Conclusión
+
+Este proyecto demuestra cómo la ingeniería de datos y los procesos ETL pueden utilizarse para transformar datos públicos en información analítica de valor, facilitando el análisis de pobreza multidimensional y condiciones de vida en Colombia.
